@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Banking App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+
+    header {
+      background: #1a73e8; color: white; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 1.4rem; }
+    #logoutBtn { background: white; color: #1a73e8; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: none; }
+
+    .container { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+
+    .card {
+      background: white; border-radius: 12px; padding: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;
+    }
+    .card h2 { margin-bottom: 20px; font-size: 1.1rem; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab-btn {
+      padding: 10px 20px; border: 2px solid #1a73e8; border-radius: 8px;
+      background: white; color: #1a73e8; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+    }
+    .tab-btn.active { background: #1a73e8; color: white; }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #555; }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 0.95rem; outline: none;
+    }
+    input:focus, select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+
+    .btn {
+      width: 100%; padding: 12px; background: #1a73e8; color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+    }
+    .btn:hover { background: #1558b0; }
+    .btn.danger { background: #d93025; }
+    .btn.danger:hover { background: #a50e0e; }
+
+    .result {
+      margin-top: 14px; padding: 14px; border-radius: 8px;
+      font-size: 0.9rem; white-space: pre-wrap; word-break: break-all;
+      display: none;
+    }
+    .result.success { background: #e6f4ea; border: 1px solid #34a853; color: #1e7e34; }
+    .result.error   { background: #fce8e6; border: 1px solid #d93025; color: #c5221f; }
+
+    .info-box {
+      background: #e8f0fe; border-radius: 8px; padding: 16px;
+      margin-bottom: 20px; font-size: 0.9rem;
+    }
+    .info-box span { font-weight: 700; color: #1a73e8; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { background: #1a73e8; color: white; padding: 10px; text-align: left; }
+    td { padding: 9px 10px; border-bottom: 1px solid #eee; }
+    tr:hover td { background: #f8f9ff; }
+
+    #authSection { display: block; }
+    #dashboardSection { display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🏦 Banking App</h1>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
+</header>
+
+<!-- AUTH SECTION -->
+<div id="authSection" class="container">
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('login')">Login</button>
+      <button class="tab-btn" onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- Login -->
+    <div id="loginTab">
+      <h2>Login to your account</h2>
+      <div class="form-group"><label>Username</label><input id="loginUser" placeholder="Enter username"/></div>
+      <div class="form-group"><label>Password</label><input id="loginPass" type="password" placeholder="Enter password"/></div>
+      <button class="btn" onclick="doLogin()">Login</button>
+      <div id="loginResult" class="result"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="registerTab" style="display:none">
+      <h2>Create a new account</h2>
+      <div class="form-group"><label>Full Name</label><input id="regName" placeholder="e.g. Alice"/></div>
+      <div class="form-group"><label>Email</label><input id="regEmail" type="email" placeholder="e.g. alice@mail.com"/></div>
+      <div class="form-group"><label>Password (min 4 chars)</label><input id="regPass" type="password" placeholder="Password"/></div>
+      <div class="form-group">
+        <label>Account Type</label>
+        <select id="regType"><option value="Savings">Savings</option><option value="Current">Current</option></select>
+      </div>
+      <div class="form-group"><label>Initial Deposit (min ₹500)</label><input id="regBalance" type="number" placeholder="e.g. 1000"/></div>
+      <button class="btn" onclick="doRegister()">Register</button>
+      <div id="registerResult" class="result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD SECTION -->
+<div id="dashboardSection" class="container">
+
+  <!-- Account Info -->
+  <div class="card" id="accountInfoCard">
+    <h2>Account Summary</h2>
+    <div class="info-box">
+      Welcome, <span id="dispName">-</span> &nbsp;|&nbsp;
+      Account No: <span id="dispAccNo">-</span> &nbsp;|&nbsp;
+      Type: <span id="dispType">-</span> &nbsp;|&nbsp;
+      Balance: <span id="dispBalance">-</span>
+    </div>
+  </div>
+
+  <!-- Operations -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Deposit -->
+    <div class="card">
+      <h2>Deposit</h2>
+      <div class="form-group"><label>Amount (₹)</label><input id="depAmt" type="number" placeholder="e.g. 500"/></div>
+      <button class="btn" onclick="doDeposit()">Deposit</button>
+      <div id="depResult" class="result"></div>
+    </div>
+
+    <!-- Withdraw -->
+    <div class="card">
+      <h2>Withdraw</h2>
+      <div class="form-group"><label>Amount (₹)</label><input id="withAmt" type="number" placeholder="e.g. 200"/></div>
+      <button class="btn" onclick="doWithdraw()">Withdraw</button>
+      <div id="withResult" class="result"></div>
+    </div>
+
+    <!-- Transfer -->
+    <div class="card">
+      <h2>Transfer</h2>
+      <div class="form-group"><label>To Account No</label><input id="transTo" type="number" placeholder="Recipient account number"/></div>
+      <div class="form-group"><label>Amount (₹)</label><input id="transAmt" type="number" placeholder="e.g. 300"/></div>
+      <button class="btn" onclick="doTransfer()">Transfer</button>
+      <div id="transResult" class="result"></div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card">
+      <h2>Change Password</h2>
+      <div class="form-group"><label>Old Password</label><input id="oldPass" type="password" placeholder="Current password"/></div>
+      <div class="form-group"><label>New Password</label><input id="newPass" type="password" placeholder="New password"/></div>
+      <button class="btn" onclick="doChangePassword()">Change Password</button>
+      <div id="passResult" class="result"></div>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="card">
+    <h2>Transaction History</h2>
+    <button class="btn" style="width:auto;padding:8px 20px;margin-bottom:16px" onclick="loadTransactions()">Refresh</button>
+    <div id="txnTable"><p style="color:#888">Click Refresh to load transactions.</p></div>
+  </div>
+
+</div>
+
+<script>
+  let currentUser = null;
+  let currentAccount = null;
+
+  function showTab(tab) {
+    document.getElementById('loginTab').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registerTab').style.display = tab === 'register' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0) === (tab === 'login')));
+  }
+
+  function showResult(id, data, isError) {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    el.className = 'result ' + (isError ? 'error' : 'success');
+    el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  }
+
+  async function api(method, path, body) {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch('/api' + path, opts);
+    const json = await res.json();
+    return { ok: res.ok, data: json };
+  }
+
+  async function doLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    if (!username || !password) return showResult('loginResult', 'Please fill in all fields.', true);
+    const { ok, data } = await api('POST', '/auth/login', { username, password });
+    if (!ok) return showResult('loginResult', data, true);
+    currentUser = data;
+    const acc = await api('GET', '/accounts/user/' + data.userId);
+    if (!acc.ok) return showResult('loginResult', acc.data, true);
+    currentAccount = acc.data;
+    showDashboard();
+  }
+
+  async function doRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPass').value;
+    const accountType = document.getElementById('regType').value;
+    const initialBalance = parseFloat(document.getElementById('regBalance').value);
+    const { ok, data } = await api('POST', '/auth/register', { name, email, password, accountType, initialBalance });
+    showResult('registerResult', data, !ok);
+  }
+
+  function showDashboard() {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('dashboardSection').style.display = 'block';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('dispName').textContent = currentAccount.accountHolderName;
+    document.getElementById('dispAccNo').textContent = currentAccount.accountNumber;
+    document.getElementById('dispType').textContent = currentAccount.accountType;
+    document.getElementById('dispBalance').textContent = '₹' + currentAccount.balance.toFixed(2);
+  }
+
+  function updateBalance(newBalance) {
+    currentAccount.balance = newBalance;
+    document.getElementById('dispBalance').textContent = '₹' + newBalance.toFixed(2);
+  }
+
+  async function doDeposit() {
+    const amount = parseFloat(document.getElementById('depAmt').value);
+    if (!amount || amount <= 0) return showResult('depResult', 'Enter a valid amount.', true);
+    const { ok, data } = await api('POST', '/accounts/' + currentAccount.accountNumber + '/deposit', { amount });
+    showResult('depResult', ok ? '✓ ' + data.message + ' | New Balance: ₹' + data.newBalance : data, !ok);
+    if (ok) updateBalance(data.newBalance);
+  }
+
+  async function doWithdraw() {
+    const amount = parseFloat(document.getElementById('withAmt').value);
+    if (!amount || amount <= 0) return showResult('withResult', 'Enter a valid amount.', true);
+    const { ok, data } = await api('POST', '/accounts/' + currentAccount.accountNumber + '/withdraw', { amount });
+    showResult('withResult', ok ? '✓ ' + data.message + ' | New Balance: ₹' + data.newBalance : data, !ok);
+    if (ok) updateBalance(data.newBalance);
+  }
+
+  async function doTransfer() {
+    const toAccount = parseInt(document.getElementById('transTo').value);
+    const amount = parseFloat(document.getElementById('transAmt').value);
+    if (!toAccount || !amount) return showResult('transResult', 'Enter valid account and amount.', true);
+    const { ok, data } = await api('POST', '/accounts/transfer', { fromAccount: currentAccount.accountNumber, toAccount, amount });
+    showResult('transResult', ok ? '✓ ' + data.message : data, !ok);
+    if (ok) {
+      const acc = await api('GET', '/accounts/' + currentAccount.accountNumber);
+      if (acc.ok) updateBalance(acc.data.balance);
+    }
+  }
+
+  async function doChangePassword() {
+    const oldPassword = document.getElementById('oldPass').value;
+    const newPassword = document.getElementById('newPass').value;
+    if (!oldPassword || !newPassword) return showResult('passResult', 'Fill in both fields.', true);
+    const { ok, data } = await api('POST', '/auth/change-password', { userId: currentUser.userId, oldPassword, newPassword });
+    showResult('passResult', ok ? '✓ ' + data.message : data, !ok);
+  }
+
+  async function loadTransactions() {
+    const { ok, data } = await api('GET', '/accounts/' + currentAccount.accountNumber + '/transactions');
+    const div = document.getElementById('txnTable');
+    if (!ok || !data.length) { div.innerHTML = '<p style="color:#888">No transactions found.</p>'; return; }
+    let html = '<table><tr><th>#</th><th>Type</th><th>Amount</th><th>Date</th><th>Description</th></tr>';
+    data.forEach((t, i) => {
+      html += `<tr><td>${i+1}</td><td>${t.transactionType}</td><td>₹${t.amount}</td><td>${t.transactionDate || '-'}</td><td>${t.description || '-'}</td></tr>`;
+    });
+    html += '</table>';
+    div.innerHTML = html;
+  }
+
+  function logout() {
+    currentUser = null; currentAccount = null;
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('dashboardSection').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+  }
+</script>
+</body>
+</html>
