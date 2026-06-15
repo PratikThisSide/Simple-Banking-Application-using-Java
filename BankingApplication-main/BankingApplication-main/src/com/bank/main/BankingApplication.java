@@ -10,3 +10,4 @@ public class BankingApplication {
         SpringApplication.run(BankingApplication.class, args);
     }
 }
+// This is the main banking application code.
